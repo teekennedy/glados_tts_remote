@@ -14,4 +14,4 @@ class Tokenizer:
 
     def decode(self, sequence: List[int]) -> str:
         text = [self.id_to_symbol[s] for s in sequence if s in self.id_to_symbol]
-        return ''.join(text)
+        return "".join(text)

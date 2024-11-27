@@ -1,3 +1,6 @@
+.devenv/
+.direnv/
+.pre-commit-config.yaml
+
 **/__pycache__/**
 *.wav
-audio/*

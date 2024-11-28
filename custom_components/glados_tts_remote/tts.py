@@ -1,10 +1,8 @@
 import asyncio
 import logging
-import re
 from urllib.parse import quote
 
 import aiohttp
-import async_timeout
 import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
 from homeassistant.components.tts import CONF_LANG, PLATFORM_SCHEMA, Provider
@@ -59,7 +57,7 @@ class GladosProvider(Provider):
         websession = async_get_clientsession(self._hass)
 
         try:
-            with async_timeout.timeout(5):
+            with asyncio.timeout(5):
                 url = "http://{}:{}/say?".format(self._host, self._port)
                 encoded_message = quote(message)
                 url_param = {

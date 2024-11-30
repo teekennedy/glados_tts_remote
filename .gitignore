@@ -2,5 +2,7 @@
 .direnv/
 .pre-commit-config.yaml
 
+models/
+
 **/__pycache__/**
 *.wav

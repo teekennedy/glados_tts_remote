@@ -2,28 +2,35 @@
 name = "glados-tts"
 version = "0.1.0"
 description = "Text-to-speech (TTS) engine that emulates GLaDOS."
-authors = ["Your Name <you@example.com>"]
+authors = ["Terrance Kennedy <terrance@missingtoken.net>", "R2D2FISH <r2d2fish@gmail.com>"]
 license = "MIT"
 readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.11"
+
+[tool.poetry.group.server.dependencies]
+flask = "^3.1.0"
 torch = [
-  {version = "^2.2.2+cpu"} #, markers = "platform_machine != 'aarch64'"},
+  {version = "^2.2.2+cpu"}
+  # {version = "^2.2.2", markers =  "platform_machine != 'aarch64'"}
 ]
+numpy = "^1.23.5"
+unidecode = "^1.3.8"
+inflect = "^7.4.0"
 deep-phonemizer = "^0.0.19"
+scipy = "^1.14.1"
+nltk = "^3.9.1"
 pydub = "^0.25.1"
 
-# setting these package versions to match those provided by alpine
-# Use https://pkgs.alpinelinux.org/packages to determine versions
+# These dependencies locked to versions provided by system packages installed in Dockerfile.server
+grpcio = "1.51.1"
+protobuf = "4.21.12"
+filelock = "3.9.0"
 
-grpcio = "1.62.1"
-inflect = "7.2.1"
-nltk = "3.8.1"
-numpy = "1.25.2"
-scipy = "1.11.4"
-werkzeug = "3.0.6"
-unidecode = "1.3.8"
+[tool.poetry.group.integration.dependencies]
+homeassistant = "*"
+voluptuous = "*"
 
 [[tool.poetry.source]]
 name = "pytorch"

@@ -1,1 +1,1 @@
-"""Adds GLaDOS tts"""
+"""Adds GLaDOS TTS Engine"""

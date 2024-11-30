@@ -26,6 +26,10 @@ def say():
         print(f"ERROR: Exception encountered while running tts: {e}")
         abort(500)
 
+@app.route("/health")
+def health():
+    return "OK"
+
 
 current_dir = os.getcwd()
 sys.path.insert(0, current_dir + "/glados_tts")

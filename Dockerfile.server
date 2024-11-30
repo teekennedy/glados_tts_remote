@@ -1,27 +1,59 @@
-ARG PYTHON_VERSION=3.11
-FROM python:${PYTHON_VERSION}-slim AS builder
-WORKDIR /tmp
+ARG PYTHON_VERSION=3.12
+FROM python:${PYTHON_VERSION}-slim as python-base
 
-# Download using
-# curl -L "https://drive.usercontent.google.com/download?id=1TRJtctjETgVVD5p7frSVPmgw8z8FFtjD&confirm=xxx" -o models.zip
-COPY ./models.zip .
+env VENV_PATH="/venv" \
+    APP_PATH="/app" \
+    PYTHONFAULTHANDLER=1 \
+    PYTHONHASHSEED=random \
+    PYTHONUNBUFFERED=1 \
+    PIP_DEFAULT_TIMEOUT=100 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    PIP_NO_CACHE_DIR=1 \
+    POETRY_HOME="/opt/poetry" \
+    POETRY_NO_INTERACTION=true \
+    POETRY_VIRTUALENVS_CREATE=false \
+    POETRY_WARNINGS_EXPORT=false
+
+# Install only runtime dependencies
 RUN apt-get update; \
-    apt-get install -y --no-install-recommends curl unzip; \
-    unzip models.zip; \
-    rm models.zip
+  apt-get install -y --no-install-recommends \
+  python3 \
+  python3-grpcio
 
-COPY requirements.txt .
-RUN python3 -m pip install --no-cache-dir --disable-pip-version-check -r requirements.txt
+# prepend poetry and venv to path
+ENV PATH="$POETRY_HOME/bin:$VENV_PATH/bin:$PATH"
 
-FROM gcr.io/distroless/python3-debian12:nonroot
-ARG PYTHON_VERSION=3.11
+WORKDIR $APP_PATH
 
-WORKDIR /app
-COPY --from=builder /tmp/models /app/models
-COPY --from=builder /usr/local/lib/python${PYTHON_VERSION}/site-packages /usr/local/lib/python${PYTHON_VERSION}/site-packages
-ENV PYTHONPATH=/usr/local/lib/python${PYTHON_VERSION}/site-packages
+FROM python-base as builder
+
+
+# python3-virtualenv is needed to use --system-site-packages with the debian-specific dist-packages directory.
+# See https://stackoverflow.com/a/31658822
+RUN apt-get update; \
+  apt-get install -y --no-install-recommends \
+  python3-virtualenv \
+  curl
+
+# Install Poetry, respects $POETRY_HOME
+RUN curl -sSL https://install.python-poetry.org | python3 -
+
+# Copy dependencies
+COPY ./poetry.lock ./pyproject.toml ./
+
+# Install runtime dependencies
+RUN poetry run pip3 install --no-warn-script-location --user poetry-plugin-export; \
+  poetry export --no-cache --only server > requirements.txt
+RUN virtualenv $VENV_PATH --system-site-packages --copies
+# RUN poetry run -- python3 -c 'import sys, platform; print("sys:", sys.platform, "\nmachine:", platform.machine())'
+RUN . $VENV_PATH/bin/activate; python3 -m pip install -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cpu
+
+FROM python-base as final
+
+COPY --from=builder $VENV_PATH $VENV_PATH
+COPY models ./models
+COPY utils ./utils
 COPY *.py ./
-COPY ./utils ./utils
 
-CMD ["engine.py"]
+CMD $VENV_PATH/bin/python3 ./engine.py
 EXPOSE 8124

@@ -6,9 +6,12 @@ import aiohttp
 import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
 from homeassistant.components.tts import CONF_LANG
+from homeassistant.components.tts import DOMAIN as TTS_DOMAIN
 from homeassistant.components.tts import PLATFORM_SCHEMA as TTS_PLATFORM_SCHEMA
 from homeassistant.components.tts import Provider
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_URL
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .const import DEFAULT_LANG, DEFAULT_URL, SUPPORTED_LANGUAGES
@@ -21,6 +24,14 @@ PLATFORM_SCHEMA = TTS_PLATFORM_SCHEMA.extend(
         vol.Optional(CONF_URL, default=DEFAULT_URL): vol.Any(cv.url_no_path, None),
     }
 )
+
+async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
+    await hass.config_entries.async_forward_entry_setups(entry, [TTS_DOMAIN])
+    return True
+
+async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
+    """Unload Entry"""
+    return await hass.config_entries.async_forward_entry_unload(entry, TTS_DOMAIN)
 
 
 def get_engine(hass, config, discovery_info=None):

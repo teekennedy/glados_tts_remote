@@ -7,6 +7,8 @@ from typing import Any
 import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
 from homeassistant import config_entries, exceptions
+from homeassistant.components.tts import CONF_LANG
+from homeassistant.const import CONF_URL
 from homeassistant.core import HomeAssistant
 
 from .const import DEFAULT_LANG, DEFAULT_URL, DOMAIN, SUPPORTED_LANGUAGES

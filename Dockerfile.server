@@ -33,6 +33,7 @@ FROM python-base as builder
 RUN apt-get update; \
   apt-get install -y --no-install-recommends \
   python3-virtualenv \
+  python3-pip-whl \
   curl
 
 # Install Poetry, respects $POETRY_HOME
@@ -42,10 +43,11 @@ RUN curl -sSL https://install.python-poetry.org | python3 -
 COPY ./poetry.lock ./pyproject.toml ./
 
 # Install runtime dependencies
+# Using poetry export and pip install because poetry won't pick up the system-installed packages
 RUN poetry run pip3 install --no-warn-script-location --user poetry-plugin-export; \
   poetry export --no-cache --only server > requirements.txt
 RUN virtualenv $VENV_PATH --system-site-packages --copies
-# RUN poetry run -- python3 -c 'import sys, platform; print("sys:", sys.platform, "\nmachine:", platform.machine())'
+RUN python3 -c 'import sys, platform; print("sys:", sys.platform, "\nmachine:", platform.machine())'
 RUN . $VENV_PATH/bin/activate; python3 -m pip install -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cpu
 
 FROM python-base as final

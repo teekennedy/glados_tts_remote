@@ -2,6 +2,7 @@
 
 import os
 import sys
+from urllib.parse import unquote
 
 from flask import Flask, abort, make_response, request
 
@@ -18,7 +19,7 @@ def say():
 
     # Generate New Sample
     try:
-        wav_binary = glados.run_tts(text)
+        wav_binary = glados.run_tts(unquote(text))
         response = make_response(wav_binary)
         response.headers.set("Content-Type", "audio/wav")
         return response

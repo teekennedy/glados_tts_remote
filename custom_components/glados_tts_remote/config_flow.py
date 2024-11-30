@@ -8,10 +8,11 @@ import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
 from homeassistant import config_entries, exceptions
 from homeassistant.components.tts import CONF_LANG
-from homeassistant.const import CONF_URL
+from homeassistant.const import CONF_TIMEOUT, CONF_URL
 from homeassistant.core import HomeAssistant
 
-from .const import DEFAULT_LANG, DEFAULT_URL, DOMAIN, SUPPORTED_LANGUAGES
+from .const import (DEFAULT_LANG, DEFAULT_TIMEOUT, DEFAULT_URL, DOMAIN,
+                    SUPPORTED_LANGUAGES)
 from .tts import GladosProvider
 
 _LOGGER = logging.getLogger(__name__)
@@ -20,6 +21,7 @@ DATA_SCHEMA = vol.Schema(
     {
         vol.Optional(CONF_LANG, default=DEFAULT_LANG): vol.In(SUPPORTED_LANGUAGES),
         vol.Optional(CONF_URL, default=DEFAULT_URL): str,
+        vol.Optional(CONF_TIMEOUT, default=DEFAULT_TIMEOUT): int,
     }
 )
 
@@ -29,11 +31,10 @@ async def validate_input(hass: HomeAssistant, data: dict) -> dict[str, Any]:
 
     Data has the keys from DATA_SCHEMA with values provided by the user.
     """
-    cv.url_no_path(data["url"])
+    # raises vol.Invalid error if url is not parseable
+    cv.url(data["url"])
 
-    provider = GladosProvider(hass, data["language"], data["url"])
-    # The dummy hub provides a `test_connection` method to ensure it's working
-    # as expected
+    provider = GladosProvider(hass, data["language"], data["url"], data["timeout"])
     result = await provider.async_test_connection()
     if not result:
         # If there is an error, raise an exception to notify HA that there was a

@@ -10,11 +10,12 @@ from homeassistant.components.tts import DOMAIN as TTS_DOMAIN
 from homeassistant.components.tts import PLATFORM_SCHEMA as TTS_PLATFORM_SCHEMA
 from homeassistant.components.tts import Provider
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_URL
+from homeassistant.const import CONF_TIMEOUT, CONF_URL
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
-from .const import DEFAULT_LANG, DEFAULT_URL, SUPPORTED_LANGUAGES
+from .const import (DEFAULT_LANG, DEFAULT_TIMEOUT, DEFAULT_URL,
+                    SUPPORTED_LANGUAGES)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -22,6 +23,7 @@ PLATFORM_SCHEMA = TTS_PLATFORM_SCHEMA.extend(
     {
         vol.Optional(CONF_LANG, default=DEFAULT_LANG): vol.In(SUPPORTED_LANGUAGES),
         vol.Optional(CONF_URL, default=DEFAULT_URL): vol.Any(cv.url_no_path, None),
+        vol.Optional(CONF_TIMEOUT, default=DEFAULT_TIMEOUT): int,
     }
 )
 
@@ -36,17 +38,18 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
 
 def get_engine(hass, config, discovery_info=None):
     """Set up Pico speech component."""
-    return GladosProvider(hass, config[CONF_LANG], config[CONF_URL])
+    return GladosProvider(hass, config[CONF_LANG], config[CONF_URL], config[CONF_TIMEOUT])
 
 
 class GladosProvider(Provider):
     """GLaDOS TTS API provider."""
 
-    def __init__(self, hass, lang, url):
+    def __init__(self, hass, lang, url, timeout):
         """Initialize GLaDOS TTS provider."""
         self._hass = hass
         self._lang = lang
         self._url = url
+        self._timeout = timeout
         self.name = "GLaDOS TTS (Remote)"
         _LOGGER.info("Initialized ", self.name)
 
@@ -67,7 +70,7 @@ class GladosProvider(Provider):
         websession = async_get_clientsession(self._hass)
 
         try:
-            async with asyncio.timeout(5):
+            async with asyncio.timeout(self._timeout):
                 url = f"{self._url}/health"
 
                 request = await websession.get(url)
@@ -85,7 +88,7 @@ class GladosProvider(Provider):
 
         url = f"{self._url}/say"
         try:
-            async with asyncio.timeout(5):
+            async with asyncio.timeout(self._timeout):
                 encoded_message = quote(message)
                 url_param = {
                     "lang": language,

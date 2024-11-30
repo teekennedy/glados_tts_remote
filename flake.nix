@@ -44,7 +44,7 @@
           # https://devenv.sh/languages/
           languages.nix.enable = true;
           languages.python.enable = true;
-          languages.python.version = "3.11.3";
+          languages.python.version = "3.12";
           languages.python.poetry.enable = true;
           # languages.python.poetry.activate.enable = true;
           # languages.python.poetry.install.enable = true;

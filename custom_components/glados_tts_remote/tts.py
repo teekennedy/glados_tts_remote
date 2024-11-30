@@ -41,6 +41,8 @@ class GladosProvider(Provider):
         self._host = host
         self._port = port
         self.name = "GLaDOS TTS (Remote)"
+        _LOGGER.info("Initialized ", self.name)
+
 
     @property
     def default_language(self):
@@ -54,6 +56,7 @@ class GladosProvider(Provider):
 
     async def async_get_tts_audio(self, message, language, options=None):
         """Load TTS using a remote server."""
+        _LOGGER.info("Using host ", self.host, "port", self.port)
         websession = async_get_clientsession(self._hass)
 
         try:

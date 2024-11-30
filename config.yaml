@@ -1,0 +1,12 @@
+name: "GLaDOS TTS"
+description: "TTS engine for the character GLaDOS"
+version: "0.1.0"
+slug: "glados_tts"
+init: false
+startup: application
+arch:
+  - aarch64
+  - amd64
+  - armhf
+  - armv7
+  - i386

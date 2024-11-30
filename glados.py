@@ -30,9 +30,9 @@ class tts_runner:
     def __init__(self, use_p1: bool = False, log: bool = False):
         self.log = log
         if use_p1:
-            self.emb = torch.load("models/emb/glados_p1.pt", weights_only=True)
+            self.emb = torch.load("models/emb/glados_p1.pt", weights_only=False)
         else:
-            self.emb = torch.load("models/emb/glados_p2.pt", weights_only=True)
+            self.emb = torch.load("models/emb/glados_p2.pt", weights_only=False)
         # Select the device
         if torch.cuda.is_available():
             self.device = "cuda"

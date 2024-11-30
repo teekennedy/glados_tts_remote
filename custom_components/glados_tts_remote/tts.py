@@ -83,9 +83,9 @@ class GladosProvider(Provider):
         _LOGGER.info("Using url", self._url)
         websession = async_get_clientsession(self._hass)
 
+        url = f"{self._url}/say"
         try:
             async with asyncio.timeout(5):
-                url = f"{self._url}/say"
                 encoded_message = quote(message)
                 url_param = {
                     "lang": language,
@@ -102,7 +102,7 @@ class GladosProvider(Provider):
                 data = await request.read()
 
         except (asyncio.TimeoutError, aiohttp.ClientError):
-            _LOGGER.error("Timeout for GLaDOS TTS API")
+            _LOGGER.error(f"Timeout for GLaDOS TTS API. Url: {url}")
             return (None, None)
 
         if data:

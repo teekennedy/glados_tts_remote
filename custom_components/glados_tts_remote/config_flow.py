@@ -19,7 +19,7 @@ _LOGGER = logging.getLogger(__name__)
 DATA_SCHEMA = vol.Schema(
     {
         vol.Optional(CONF_LANG, default=DEFAULT_LANG): vol.In(SUPPORTED_LANGUAGES),
-        vol.Optional(CONF_URL, default=DEFAULT_URL): cv.url_no_path,
+        vol.Optional(CONF_URL, default=DEFAULT_URL): str,
     }
 )
 
@@ -29,6 +29,8 @@ async def validate_input(hass: HomeAssistant, data: dict) -> dict[str, Any]:
 
     Data has the keys from DATA_SCHEMA with values provided by the user.
     """
+    cv.url_no_path(data["url"])
+
     provider = GladosProvider(hass, data["language"], data["url"])
     # The dummy hub provides a `test_connection` method to ensure it's working
     # as expected
@@ -49,11 +51,6 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Hello World."""
 
     VERSION = 1
-    # Pick one of the available connection classes in homeassistant/config_entries.py
-    # This tells HA if it should be asking for updates, or it'll be notified of updates
-    # automatically. This example uses PUSH, as the dummy hub will notify HA of
-    # changes.
-    CONNECTION_CLASS = config_entries.CONN_CLASS_LOCAL_PUSH
 
     async def async_step_user(self, user_input=None):
         """Handle the initial step."""
@@ -69,6 +66,8 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 info = await validate_input(self.hass, user_input)
 
                 return self.async_create_entry(title=info["title"], data=user_input)
+            except vol.Invalid as e:
+                errors["url"] = str(e)
             except ConnectionTestFailed:
                 errors["url"] = "connection_test_failed"
             except Exception:  # pylint: disable=broad-except

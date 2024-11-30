@@ -18,7 +18,7 @@ _LOGGER = logging.getLogger(__name__)
 PLATFORM_SCHEMA = TTS_PLATFORM_SCHEMA.extend(
     {
         vol.Optional(CONF_LANG, default=DEFAULT_LANG): vol.In(SUPPORTED_LANGUAGES),
-        vol.Optional(CONF_URL, default=DEFAULT_URL): cv.url_no_path,
+        vol.Optional(CONF_URL, default=DEFAULT_URL): vol.Any(cv.url_no_path, None),
     }
 )
 
@@ -56,7 +56,7 @@ class GladosProvider(Provider):
         websession = async_get_clientsession(self._hass)
 
         try:
-            with asyncio.timeout(5):
+            async with asyncio.timeout(5):
                 url = f"{self._url}/health"
 
                 request = await websession.get(url)
@@ -73,7 +73,7 @@ class GladosProvider(Provider):
         websession = async_get_clientsession(self._hass)
 
         try:
-            with asyncio.timeout(5):
+            async with asyncio.timeout(5):
                 url = f"{self._url}/say"
                 encoded_message = quote(message)
                 url_param = {

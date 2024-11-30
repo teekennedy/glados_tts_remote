@@ -46,9 +46,9 @@
           languages.python.enable = true;
           languages.python.version = "3.12";
           languages.python.poetry.enable = true;
-          # languages.python.poetry.activate.enable = true;
-          # languages.python.poetry.install.enable = true;
-          # languages.python.poetry.install.groups = ["integration"];
+          languages.python.poetry.activate.enable = true;
+          languages.python.poetry.install.enable = true;
+          languages.python.poetry.install.onlyGroups = ["integration"];
 
           # https://devenv.sh/scripts/
           # scripts.hello.exec = "echo hello from $GREET";

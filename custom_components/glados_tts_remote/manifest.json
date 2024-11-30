@@ -3,6 +3,7 @@
   "name": "GLaDOS TTS Remote",
   "codeowners": ["@teekennedy"],
   "config_flow": true,
+  "dependencies": ["http"],
   "documentation": "https://github.com/teekennedy/glados_tts_remote/blob/main/README.md",
   "integration_type": "service",
   "iot_class": "local_push",

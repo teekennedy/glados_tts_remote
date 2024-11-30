@@ -1422,6 +1422,20 @@ files = [
 ]
 
 [[package]]
+name = "ha-ffmpeg"
+version = "3.2.2"
+description = "A library that handling with ffmpeg for home-assistant"
+optional = false
+python-versions = "*"
+files = [
+    {file = "ha_ffmpeg-3.2.2-py3-none-any.whl", hash = "sha256:4fd4a4f4cdaf3243d2737942f3f41f141e4437d2af1167655815dc03283b1652"},
+    {file = "ha_ffmpeg-3.2.2.tar.gz", hash = "sha256:80e4a77b3eda73df456ec9cc3295a898ed7cbb8cd2d59798f10e8c10a8e6c401"},
+]
+
+[package.dependencies]
+async-timeout = "*"
+
+[[package]]
 name = "habluetooth"
 version = "3.6.0"
 description = "High availability Bluetooth"
@@ -2040,6 +2054,17 @@ files = [
     {file = "multidict-6.1.0-cp39-cp39-win_amd64.whl", hash = "sha256:aa466da5b15ccea564bdab9c89175c762bc12825f4659c11227f515cee76fa4a"},
     {file = "multidict-6.1.0-py3-none-any.whl", hash = "sha256:48e171e52d1c4d33888e529b999e5900356b9ae588c2f09a52dcefb158b27506"},
     {file = "multidict-6.1.0.tar.gz", hash = "sha256:22ae2ebf9b0c69d206c003e2f6a914ea33f0a932d4aa16f236afc049d9958f4a"},
+]
+
+[[package]]
+name = "mutagen"
+version = "1.47.0"
+description = "read and write audio tags for many formats"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "mutagen-1.47.0-py3-none-any.whl", hash = "sha256:edd96f50c5907a9539d8e5bba7245f62c9f520aef333d13392a79a4f70aca719"},
+    {file = "mutagen-1.47.0.tar.gz", hash = "sha256:719fadef0a978c31b4cf3c956261b3c58b6948b32023078a2117b1de09f0fc99"},
 ]
 
 [[package]]
@@ -4134,4 +4159,4 @@ propcache = ">=0.2.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "78180b6ddcd52641ef751d08a9cb577381b895faf6a453050a10c741c3a6ed2b"
+content-hash = "4c4a04b083b73d835d48c10cda970c0392cc501337fbabc5bc2518d840326b09"

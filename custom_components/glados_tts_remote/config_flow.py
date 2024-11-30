@@ -4,16 +4,22 @@ from __future__ import annotations
 import logging
 from typing import Any
 
+import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
 from homeassistant import config_entries, exceptions
 from homeassistant.core import HomeAssistant
 
-from .const import DOMAIN, SUPPORTED_LANGUAGES  # pylint:disable=unused-import
+from .const import DEFAULT_LANG, DEFAULT_URL, DOMAIN, SUPPORTED_LANGUAGES
 from .tts import GladosProvider
 
 _LOGGER = logging.getLogger(__name__)
 
-DATA_SCHEMA = vol.Schema({("host"): str})
+DATA_SCHEMA = vol.Schema(
+    {
+        vol.Optional(CONF_LANG, default=DEFAULT_LANG): vol.In(SUPPORTED_LANGUAGES),
+        vol.Optional(CONF_URL, default=DEFAULT_URL): cv.url_no_path,
+    }
+)
 
 
 async def validate_input(hass: HomeAssistant, data: dict) -> dict[str, Any]:
@@ -21,15 +27,6 @@ async def validate_input(hass: HomeAssistant, data: dict) -> dict[str, Any]:
 
     Data has the keys from DATA_SCHEMA with values provided by the user.
     """
-    # Validate the data can be used to set up a connection.
-
-    if len(data["url"]) < 3:
-        raise InvalidUrl
-
-    if data["language"] not in SUPPORTED_LANGUAGES:
-        raise InvalidLanguage
-
-
     provider = GladosProvider(hass, data["language"], data["url"])
     # The dummy hub provides a `test_connection` method to ensure it's working
     # as expected
@@ -72,14 +69,6 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 return self.async_create_entry(title=info["title"], data=user_input)
             except ConnectionTestFailed:
                 errors["url"] = "connection_test_failed"
-            except InvalidUrl:
-                # The error string is set here, and should be translated.
-                # This example does not currently cover translations, see the
-                # comments on `DATA_SCHEMA` for further details.
-                # Set the error on the `host` field, not the entire form.
-                errors["url"] = "cannot_connect"
-            except InvalidLanguage:
-                errors["language"] = "unsupported_language"
             except Exception:  # pylint: disable=broad-except
                 _LOGGER.exception("Unexpected exception")
                 errors["base"] = "unknown"
@@ -92,10 +81,3 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
 class ConnectionTestFailed(exceptions.HomeAssistantError):
     """Error to indicate we cannot connect."""
-
-
-class InvalidUrl(exceptions.HomeAssistantError):
-    """Error to indicate there is an invalid server url."""
-
-class InvalidLanguage(exceptions.HomeAssistantError):
-    """Error to indicate there is an invalid language."""

@@ -2,6 +2,7 @@
 
 import os
 import sys
+import traceback
 from urllib.parse import unquote
 
 from flask import Flask, abort, make_response, request
@@ -25,6 +26,7 @@ def say():
         return response
     except Exception as e:
         print(f"ERROR: Exception encountered while running tts: {e}")
+        print(traceback.format_exc())
         abort(500)
 
 @app.route("/health")

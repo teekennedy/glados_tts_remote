@@ -85,6 +85,7 @@ class GladosProvider(Provider):
         """Load TTS using a remote server."""
         _LOGGER.info("Using url", self._url)
         websession = async_get_clientsession(self._hass)
+        format = "mp3"
 
         url = f"{self._url}/say"
         try:
@@ -93,6 +94,7 @@ class GladosProvider(Provider):
                 url_param = {
                     "lang": language,
                     "text": encoded_message,
+                    "format": format,
                 }
 
                 request = await websession.get(url, params=url_param)
@@ -109,5 +111,5 @@ class GladosProvider(Provider):
             return (None, None)
 
         if data:
-            return ("wav", data)
+            return (format, data)
         return (None, None)

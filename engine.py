@@ -14,15 +14,20 @@ app = Flask(__name__)
 
 @app.route("/say")
 def say():
-    text = request.args.get("text", None)
-    if text is None:
-        abort(400)
+    format = request.args.get("format", "wav")
+    if format not in ["wav", "mp3"]:
+        abort(400, "Unknown audio format")
+
+    text = request.args.get("text", "")
+    if len(text) == 0:
+        # No text, no response
+        return('', 204)
 
     # Generate New Sample
     try:
-        wav_binary = glados.run_tts(unquote(text))
-        response = make_response(wav_binary)
-        response.headers.set("Content-Type", "audio/wav")
+        audio_binary = glados.run_tts(unquote(text), format=format)
+        response = make_response(audio_binary)
+        response.headers.set("Content-Type", f"audio/{format}")
         return response
     except Exception as e:
         print(f"ERROR: Exception encountered while running tts: {e}")

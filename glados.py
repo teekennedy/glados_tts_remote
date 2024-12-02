@@ -47,7 +47,7 @@ class tts_runner:
             _ = self.vocoder(init_mel)
 
     @torch.no_grad()
-    def run_tts(self, text: str, alpha: float = 1.0) -> bytes:
+    def run_tts(self, text: str, format: str = "wav", alpha: float = 1.0) -> bytes:
         sentences = self.split_sentences(text)
 
         result_audio = AudioSegment.silent(100)
@@ -84,7 +84,7 @@ class tts_runner:
                 result_audio += AudioSegment.silent(500)
 
         result_file = io.BytesIO()
-        result_audio.export(result_file, format='wav')
+        result_audio.export(result_file, format=format)
         return result_file.getvalue()
 
     def split_sentences(self, text: str)-> t.List[str]:

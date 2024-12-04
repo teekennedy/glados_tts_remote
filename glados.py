@@ -72,8 +72,8 @@ class tts_runner:
 
             # Normalize audio to fit in wav-file
             audio = audio.squeeze()
-            audio = audio * 2147483647
-            audio = audio.cpu().numpy().astype("int32")
+            audio = audio * 32768.0
+            audio = audio.cpu().numpy().astype("int16")
             tmp_file = io.BytesIO()
             write(tmp_file, 22050, audio)
 

@@ -39,7 +39,7 @@ class tts_runner:
             vocoder_model = "models/vocoder-cpu-hq.pt"
 
         # Load models
-        self.glados = torch.jit.load("models/glados-new.pt")
+        self.glados = torch.jit.load("models/glados.pt")
         self.vocoder = torch.jit.load(vocoder_model, map_location=self.device)
         for i in range(2):
             init = self.glados.generate_jit(prepare_text(str(i)), self.emb, 1.0)

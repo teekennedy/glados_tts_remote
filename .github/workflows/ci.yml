@@ -22,8 +22,6 @@ jobs:
     steps:
       - name: checkout code
         uses: actions/checkout@v4
-        with:
-          lfs: true
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v5
@@ -64,8 +62,6 @@ jobs:
         with:
           context: .
           file: ./Dockerfile.server
-          # Build container in all architectures supported by GitHub Actions
-          # platforms: ${{steps.buildx.outputs.platforms}}
           platforms: linux/amd64,linux/arm64
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}

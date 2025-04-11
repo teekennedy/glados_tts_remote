@@ -38,6 +38,8 @@ class tts_runner:
             self.device = "cpu"
             vocoder_model = "models/vocoder-cpu-hq.pt"
 
+        print(f"Using {self.device} backend")
+
         # Load models
         self.glados = torch.jit.load("models/glados.pt")
         self.vocoder = torch.jit.load(vocoder_model, map_location=self.device)

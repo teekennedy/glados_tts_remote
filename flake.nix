@@ -48,7 +48,8 @@
           languages.python.poetry.enable = true;
           languages.python.poetry.activate.enable = true;
           languages.python.poetry.install.enable = true;
-          languages.python.poetry.install.onlyGroups = ["integration"];
+          languages.python.poetry.install.verbosity = "little";
+          languages.python.poetry.install.onlyInstallRootPackage = true;
 
           # https://devenv.sh/scripts/
           # scripts.hello.exec = "echo hello from $GREET";

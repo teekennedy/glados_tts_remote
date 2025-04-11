@@ -45,7 +45,9 @@ COPY ./poetry.lock ./pyproject.toml ./
 
 # Install runtime dependencies
 # Using poetry export and pip install because poetry won't pick up the system-installed packages
-RUN poetry export --no-cache --only server > requirements.txt
+# poetry install --dry-run, despite its name, actually installs poetry plugins defined in pyproject.toml.
+# Ref: https://github.com/python-poetry/poetry/issues/9990
+RUN poetry install --dry-run; poetry export --no-cache --only server > requirements.txt
 RUN virtualenv $VENV_PATH --system-site-packages --copies
 RUN python3 -c 'import sys, platform; print("sys:", sys.platform, "\nmachine:", platform.machine())'
 RUN . $VENV_PATH/bin/activate; python3 -m pip install -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cpu

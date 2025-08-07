@@ -1,4 +1,4 @@
-# TTS Package
+# GLaDOS TTS
 
 An independent Text-to-Speech (TTS) package extracted from GLaDOS, providing GLaDOS and Kokoro voice synthesis capabilities.
 
@@ -6,6 +6,7 @@ An independent Text-to-Speech (TTS) package extracted from GLaDOS, providing GLa
 
 - **GLaDOS Voice**: High-quality GLaDOS voice synthesis using VITS model
 - **Kokoro Voices**: Multiple voice options with Kokoro TTS engine
+- **HTTP Server**: Piper-compatible web server for TTS synthesis
 - **Protocol-based Interface**: Clean, extensible API for TTS synthesis
 - **ONNX Runtime**: Optimized inference with ONNX models
 
@@ -15,13 +16,67 @@ Install the package using uv:
 
 ```bash
 # For CPU inference
-uv add tts-package[cpu]
+uv sync --extra cpu
 
 # For CUDA GPU inference
-uv add tts-package[cuda]
+uv sync --extra cuda
+
+# For HTTP server support
+uv sync --extra http
 ```
 
 ## Quick Start
+
+### Command Line Usage
+
+```bash
+# Using the module directly (if package is installed)
+python -m glados_tts --say "Hello, this is GLaDOS speaking" --output glados.wav
+
+# Or using the console script (if package is installed with pip/uv)
+glados-tts --say "Hello, this is GLaDOS speaking" --output glados.wav
+
+# Or running the script directly
+python glados_tts.py --say "Hello, this is GLaDOS speaking" --output glados.wav
+
+# Start HTTP server (any of these methods work)
+python -m glados_tts --serve
+glados-tts --serve
+python glados_tts.py --serve
+
+# Start server on custom host/port
+python -m glados_tts --serve --host 0.0.0.0 --port 8080
+```
+
+### HTTP Server
+
+The GLaDOS TTS server provides a Piper-compatible HTTP API for text-to-speech synthesis:
+
+```bash
+# Start the server
+python -m glados_tts --serve
+
+# Generate speech via HTTP API
+curl -X POST -H 'Content-Type: application/json' \
+  -d '{"text": "Hello, this is GLaDOS speaking from the HTTP server"}' \
+  --output glados_response.wav \
+  http://localhost:5000
+
+# With custom parameters
+curl -X POST -H 'Content-Type: application/json' \
+  -d '{
+    "text": "Testing speech synthesis parameters",
+    "length_scale": 0.8,
+    "noise_scale": 0.6
+  }' \
+  --output glados_custom.wav \
+  http://localhost:5000
+
+# List available voices
+curl http://localhost:5000/voices
+```
+
+### Python API
 
 ```python
 from glados_tts import get_speech_synthesizer

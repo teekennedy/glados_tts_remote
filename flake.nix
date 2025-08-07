@@ -65,47 +65,115 @@
           ]
         );
     in {
-      packages = {
-        default = pythonSet.mkVirtualEnv "glados-tts" {glados-tts = ["cpu"];};
+      packages =
+        {
+          default = pkgs.stdenv.mkDerivation rec {
+            name = "glados-tts";
+            src = ./.;
 
-        # Alternative package with CUDA support
-        cuda = pythonSet.mkVirtualEnv "glados-tts" {glados-tts = ["cuda"];};
+            gladosModel = pkgs.fetchurl {
+              url = "https://github.com/dnhkng/GlaDOS/releases/download/0.1/glados.onnx";
+              sha256 = "17ea16dd18e1bac343090b8589042b4052f1e5456d42cad8842a4f110de25095";
+            };
 
-        # Development environment
-        dev = pythonSet.mkVirtualEnv "glados-tts" {glados-tts = ["dev" "cpu" "http"];};
+            phonemizerModel = pkgs.fetchurl {
+              url = "https://github.com/dnhkng/GlaDOS/releases/download/0.1/phomenizer_en.onnx";
+              sha256 = "b64dbbeca8b350927a0b6ca5c4642e0230173034abd0b5bb72c07680d700c5a0";
+            };
 
-        # HTTP server application
-        http = pythonSet.mkVirtualEnv "glados-tts" {glados-tts = ["cpu" "http"];};
-        devenv-up = self.devShells.${system}.default.config.procfileScript;
-        devenv-test = self.devShells.${system}.default.config.test;
-      };
+            pythonEnv = pythonSet.mkVirtualEnv name {glados-tts = ["cpu"];};
+
+            buildInputs = [pythonEnv];
+
+            buildPhase = ''
+              mkdir -p $out/models/TTS
+
+              # Copy model configuration file
+              cp -r ${src}/models/TTS/glados.onnx.json $out/models/TTS/
+
+              cp ${gladosModel} $out/models/TTS/glados.onnx
+              cp ${phonemizerModel} $out/models/TTS/phomenizer_en.onnx
+            '';
+
+            installPhase = ''
+              mkdir -p $out/bin
+              # Copy all binaries except for glados-tts
+              for f in ${pythonEnv}/bin/*; do
+                [ "$(basename "$f")" = "glados-tts" ] && continue
+                cp "$f" $out/bin/
+              done
+
+              # Create wrapper script for glados-tts
+              cat > $out/bin/glados-tts << EOF
+              #!/bin/bash
+              export GLADOS_TTS_MODELS_DIR="$out/models/TTS"
+              exec $pythonEnv/bin/glados-tts "\$@"
+              EOF
+              chmod +x $out/bin/glados-tts
+            '';
+          };
+
+          # Development environment
+          dev = self.packages.${system}.default.overrideAttrs (oldAttrs: {
+            pythonEnv = pythonSet.mkVirtualEnv oldAttrs.name {glados-tts = ["dev" "cpu" "http"];};
+          });
+
+          # HTTP server applications
+          cpu-http = self.packages.${system}.default.overrideAttrs (oldAttrs: {
+            pythonEnv = pythonSet.mkVirtualEnv oldAttrs.name {glados-tts = ["cpu" "http"];};
+          });
+        }
+        // pkgs.lib.optionalAttrs (system != "aarch64-darwin") {
+          # CUDA packages - excluded on macOS ARM due to compatibility issues
+          cuda = self.packages.${system}.default.overrideAttrs (oldAttrs: {
+            pythonEnv = pythonSet.mkVirtualEnv oldAttrs.name {glados-tts = ["cuda"];};
+          });
+
+          cuda-http = self.packages.${system}.default.overrideAttrs (oldAttrs: {
+            pythonEnv = pythonSet.mkVirtualEnv oldAttrs.name {glados-tts = ["cuda" "http"];};
+          });
+        };
 
       apps = {
         default = {
           type = "app";
-          program = "${self.packages."${system}".http}/bin/glados-tts";
+          program = "${self.packages."${system}".cpu-http}/bin/glados-tts";
+          meta = {
+            description = "GlaDOS TTS application with HTTP server";
+            maintainers = with pkgs.lib.maintainers; [teekennedy];
+            # glados TTS model and config are MIT licenced, but piper's http server is GPL3
+            license = pkgs.lib.licenses.gpl3plus;
+            homepage = "https://github.com/dnhkng/GLaDOS";
+            platform = pkgs.lib.platforms.all;
+          };
         };
       };
 
-      devenv.shells.default = {
+      devShells.default = devenv.lib.mkShell {
         inherit inputs pkgs;
-        packages = with pkgs; [
-          python312
-          uv
+        modules = [
+          ({pkgs, ...}: {
+            # This is your devenv configuration
+            packages = [
+              python
+              pkgs.uv
+            ];
+
+            git-hooks.hooks = {
+              # Nix code formatter
+              alejandra = {
+                enable = true;
+                after = ["deadnix"];
+              };
+              # Removes nix dead code
+              deadnix = {
+                enable = true;
+                args = ["--edit"];
+              };
+              black.enable = true;
+            };
+          })
         ];
-        git-hooks.hooks = {
-          # Nix code formatter
-          alejandra = {
-            enable = true;
-            after = ["deadnix"];
-          };
-          # Removes nix dead code
-          deadnix = {
-            enable = true;
-            args = ["--edit"];
-          };
-          black.enable = true;
-        };
       };
     });
 }

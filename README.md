@@ -1,143 +1,35 @@
-# GLaDOS TTS
+# GLaDOS Piper Addon
 
-An independent Text-to-Speech (TTS) package extracted from GLaDOS, providing GLaDOS and Kokoro voice synthesis capabilities.
+![Supports aarch64 Architecture][aarch64-shield] ![Supports amd64 Architecture][amd64-shield]
 
-## Features
+This project is a downstream fork of the official [Home Assistant Piper addon][upstream] that uses the GLaDOS voice model from [dnhkng/GlaDOS].
 
-- **GLaDOS Voice**: High-quality GLaDOS voice synthesis using VITS model
-- **Kokoro Voices**: Multiple voice options with Kokoro TTS engine
-- **HTTP Server**: Piper-compatible web server for TTS synthesis
-- **Protocol-based Interface**: Clean, extensible API for TTS synthesis
-- **ONNX Runtime**: Optimized inference with ONNX models
+The official addon limits the voices to a predefined set of models.
+This fork adds GLaDOS as a voice option, and also provides a url option to allow you to download and use models from any source.
+
+Using a custom model url breaks the model auto-update functionality, so that feature is disabled.
+Instead, updates to the GLaDOS voice model will be done by releasing new versions of this forked addon.
 
 ## Installation
 
-Install the package using uv:
+[![Add Repository to HA][my-ha-badge]][my-ha-url]
 
-```bash
-# For CPU inference
-uv sync --extra cpu
+You can also install this addon manually by going to Settings -> Add-Ons -> Add-on Store -> Menu (three dots) -> Repositories and adding this repository's url.
 
-# For CUDA GPU inference
-uv sync --extra cuda
+## TODO
 
-# For HTTP server support
-uv sync --extra http
-```
-
-## Quick Start
-
-### Command Line Usage
-
-```bash
-# Using the module directly (if package is installed)
-python -m glados_tts --say "Hello, this is GLaDOS speaking" --output glados.wav
-
-# Or using the console script (if package is installed with pip/uv)
-glados-tts --say "Hello, this is GLaDOS speaking" --output glados.wav
-
-# Or running the script directly
-python glados_tts.py --say "Hello, this is GLaDOS speaking" --output glados.wav
-
-# Start HTTP server (any of these methods work)
-python -m glados_tts --serve
-glados-tts --serve
-python glados_tts.py --serve
-
-# Start server on custom host/port
-python -m glados_tts --serve --host 0.0.0.0 --port 8080
-```
-
-### HTTP Server
-
-The GLaDOS TTS server provides a Piper-compatible HTTP API for text-to-speech synthesis:
-
-```bash
-# Start the server
-python -m glados_tts --serve
-
-# Generate speech via HTTP API
-curl -X POST -H 'Content-Type: application/json' \
-  -d '{"text": "Hello, this is GLaDOS speaking from the HTTP server"}' \
-  --output glados_response.wav \
-  http://localhost:8124
-
-# With custom parameters
-curl -X POST -H 'Content-Type: application/json' \
-  -d '{
-    "text": "Testing speech synthesis parameters",
-    "length_scale": 0.8,
-    "noise_scale": 0.6
-  }' \
-  --output glados_custom.wav \
-  http://localhost:8124
-
-# List available voices
-curl http://localhost:8124/voices
-```
-
-### Python API
-
-```python
-from glados_tts import get_speech_synthesizer
-import soundfile as sf
-
-# Use GLaDOS voice
-synthesizer = get_speech_synthesizer("glados")
-audio = synthesizer.generate_speech_audio("Hello, this is GLaDOS speaking.")
-sf.write("glados_output.wav", audio, synthesizer.sample_rate)
-
-# Use Kokoro voice
-from glados_tts.synthesizers.tts_kokoro import get_voices
-print("Available voices:", get_voices())
-
-kokoro_synth = get_speech_synthesizer("af_alloy")  # or any available voice
-audio = kokoro_synth.generate_speech_audio("Hello from Kokoro!")
-sf.write("kokoro_output.wav", audio, kokoro_synth.sample_rate)
-```
-
-## API Reference
-
-### `get_speech_synthesizer(voice: str = "glados")`
-
-Factory function to create TTS synthesizer instances.
-
-**Parameters:**
-
-- `voice`: Voice name ("glados" for GLaDOS voice, or any Kokoro voice name)
-
-**Returns:**
-
-- `SpeechSynthesizerProtocol`: TTS synthesizer instance
-
-### `SpeechSynthesizerProtocol`
-
-Protocol defining the TTS interface.
-
-**Attributes:**
-
-- `sample_rate: int`: Audio sample rate
-
-**Methods:**
-
-- `generate_speech_audio(text: str) -> NDArray[np.float32]`: Convert text to audio
-
-## Development
-
-```bash
-# Install in development mode
-uv add -e .[dev]
-
-# Run linting
-uv run ruff check .
-
-# Run type checking
-uv run mypy .
-
-# Run tests
-uv run pytest
-```
+- [ ] Get fork working.
+- [ ] GitHub action to validate addon.
+- [ ] Update icon to distinguish this fork from the official one.
+- [ ] Setup action to periodically check for and incorporate upstream changes.
 
 ## License
 
-This package is extracted from the GLaDOS project and inherits its licensing terms.
+This project is licensed based on its [upstream] which is Apache 2.0. The GLaDOS models are MIT licensed.
+
+[upstream]: https://github.com/home-assistant/addons/tree/master/piper
+[dnhkng/GlaDOS]: https://github.com/dnhkng/GlaDOS
+[aarch64-shield]: https://img.shields.io/badge/aarch64-yes-green.svg
+[amd64-shield]: https://img.shields.io/badge/amd64-yes-green.svg
+[my-ha-badge]: https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg
+[my-ha-url]: https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?

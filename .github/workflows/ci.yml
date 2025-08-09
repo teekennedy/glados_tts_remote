@@ -55,7 +55,7 @@ jobs:
       - uses: DeterminateSystems/flake-checker-action@main
       - name: Build Docker Container
         run: |
-          nix build .#docker-cpu-http
+          nix build --accept-flake-config .#docker-cpu-http
           if ${{ github.event_name != 'pull_request' }}; then
             docker load < result
             for tag in ${{ steps.meta.outputs.tags }}; do

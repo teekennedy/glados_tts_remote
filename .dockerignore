@@ -1,0 +1,17 @@
+# Model files
+*.onnx
+
+# Git and github
+.git/
+.gitignore
+.github
+
+# python
+*.pyc
+**/__pycache__/
+.venv/
+
+# Nix things
+.envrc
+.devenv/
+.direnv/

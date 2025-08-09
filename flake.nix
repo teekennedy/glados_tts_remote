@@ -66,7 +66,7 @@
         );
     in {
       packages =
-        {
+        rec {
           default = pkgs.stdenv.mkDerivation rec {
             name = "glados-tts";
             src = ./.;
@@ -89,16 +89,16 @@
               mkdir -p $out/models/TTS
 
               # Copy model configuration file
-              cp -r ${src}/models/TTS/glados.onnx.json $out/models/TTS/
+              cp -r $src/models/TTS/glados.onnx.json $out/models/TTS/
 
-              cp ${gladosModel} $out/models/TTS/glados.onnx
-              cp ${phonemizerModel} $out/models/TTS/phomenizer_en.onnx
+              cp $gladosModel $out/models/TTS/glados.onnx
+              cp $phonemizerModel $out/models/TTS/phomenizer_en.onnx
             '';
 
             installPhase = ''
               mkdir -p $out/bin
               # Copy all binaries except for glados-tts
-              for f in ${pythonEnv}/bin/*; do
+              for f in $pythonEnv/bin/*; do
                 [ "$(basename "$f")" = "glados-tts" ] && continue
                 cp "$f" $out/bin/
               done
@@ -113,6 +113,9 @@
             '';
           };
 
+          # The version of python packaged with glados-tts
+          python = python;
+
           # Development environment
           dev = self.packages.${system}.default.overrideAttrs (oldAttrs: {
             pythonEnv = pythonSet.mkVirtualEnv oldAttrs.name {glados-tts = ["dev" "cpu" "http"];};
@@ -122,16 +125,61 @@
           cpu-http = self.packages.${system}.default.overrideAttrs (oldAttrs: {
             pythonEnv = pythonSet.mkVirtualEnv oldAttrs.name {glados-tts = ["cpu" "http"];};
           });
+          # Minimal Docker image
+          docker-cpu-http = let
+            inherit cpu-http;
+          in
+            pkgs.dockerTools.buildLayeredImage {
+              name = "glados-tts";
+              tag = "docker-cpu-http";
+
+              contents = [
+                cpu-http
+              ];
+
+              config = {
+                Cmd = ["${cpu-http}/bin/glados-tts"];
+                ExposedPorts = {
+                  "8124/tcp" = {};
+                };
+                Env = [
+                  "PATH=${cpu-http}/bin"
+                  "GLADOS_TTS_MODELS_DIR=${cpu-http}/models/TTS"
+                ];
+              };
+            };
         }
         // pkgs.lib.optionalAttrs (system != "aarch64-darwin") {
           # CUDA packages - excluded on macOS ARM due to compatibility issues
-          cuda = self.packages.${system}.default.overrideAttrs (oldAttrs: {
-            pythonEnv = pythonSet.mkVirtualEnv oldAttrs.name {glados-tts = ["cuda"];};
+          cuda-cli = self.packages.${system}.default.overrideAttrs (oldAttrs: {
+            pythonEnv = pythonSet.mkVirtualEnv oldAttrs.name {glados-tts = ["cuda" "cli"];};
           });
 
           cuda-http = self.packages.${system}.default.overrideAttrs (oldAttrs: {
             pythonEnv = pythonSet.mkVirtualEnv oldAttrs.name {glados-tts = ["cuda" "http"];};
           });
+
+          # CUDA Docker image
+          docker-cuda = pkgs.dockerTools.buildLayeredImage {
+            name = "glados-tts";
+            tag = "cuda";
+
+            contents = [
+              self.packages.${system}.cuda-http
+              pkgs.bash
+              pkgs.coreutils
+            ];
+
+            config = {
+              Cmd = ["${self.packages.${system}.cuda-http}/bin/glados-tts"];
+              ExposedPorts = {
+                "8124/tcp" = {};
+              };
+              Env = [
+                "PATH=${self.packages.${system}.cuda-http}/bin:${pkgs.bash}/bin:${pkgs.coreutils}/bin"
+              ];
+            };
+          };
         };
 
       apps = {

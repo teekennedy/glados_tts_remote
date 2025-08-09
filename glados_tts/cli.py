@@ -5,12 +5,26 @@ import argparse
 import sys
 from pathlib import Path
 
-import soundfile as sf
 
 from .synthesizers.tts_glados import SpeechSynthesizer
 
 
-def start_server(host: str = "localhost", port: int = 5000) -> None:
+def say(text: str, output_path: Path) -> None:
+    import soundfile as sf
+
+    # Initialize the synthesizer
+    synthesizer = SpeechSynthesizer()
+
+    # Generate audio from text
+    audio = synthesizer.generate_speech_audio(text)
+
+    # Write to output file
+    sf.write(output_path, audio, synthesizer.sample_rate)
+
+    print(f"Generated audio saved to: {output_path}")
+
+
+def start_server(host: str = "localhost", port: int = 8124) -> None:
     """Start the Piper HTTP server with GLaDOS voice."""
     try:
         from piper.http_server import main as piper_main
@@ -86,8 +100,8 @@ def main() -> None:
     parser.add_argument(
         "--port",
         type=int,
-        default=5000,
-        help="Port for HTTP server (default: 5000)",
+        default=8124,
+        help="Port for HTTP server (default: 8124)",
     )
 
     args = parser.parse_args()
@@ -99,16 +113,7 @@ def main() -> None:
         if not args.output:
             parser.error("--output is required when using --say")
 
-        # Initialize the synthesizer
-        synthesizer = SpeechSynthesizer()
-
-        # Generate audio from text
-        audio = synthesizer.generate_speech_audio(args.say)
-
-        # Write to output file
-        sf.write(args.output, audio, synthesizer.sample_rate)
-
-        print(f"Generated audio saved to: {args.output}")
+        say(args.say, args.output)
 
 
 if __name__ == "__main__":

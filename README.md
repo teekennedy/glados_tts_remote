@@ -60,7 +60,7 @@ python -m glados_tts --serve
 curl -X POST -H 'Content-Type: application/json' \
   -d '{"text": "Hello, this is GLaDOS speaking from the HTTP server"}' \
   --output glados_response.wav \
-  http://localhost:5000
+  http://localhost:8124
 
 # With custom parameters
 curl -X POST -H 'Content-Type: application/json' \
@@ -70,10 +70,10 @@ curl -X POST -H 'Content-Type: application/json' \
     "noise_scale": 0.6
   }' \
   --output glados_custom.wav \
-  http://localhost:5000
+  http://localhost:8124
 
 # List available voices
-curl http://localhost:5000/voices
+curl http://localhost:8124/voices
 ```
 
 ### Python API
@@ -103,9 +103,11 @@ sf.write("kokoro_output.wav", audio, kokoro_synth.sample_rate)
 Factory function to create TTS synthesizer instances.
 
 **Parameters:**
+
 - `voice`: Voice name ("glados" for GLaDOS voice, or any Kokoro voice name)
 
 **Returns:**
+
 - `SpeechSynthesizerProtocol`: TTS synthesizer instance
 
 ### `SpeechSynthesizerProtocol`
@@ -113,9 +115,11 @@ Factory function to create TTS synthesizer instances.
 Protocol defining the TTS interface.
 
 **Attributes:**
+
 - `sample_rate: int`: Audio sample rate
 
 **Methods:**
+
 - `generate_speech_audio(text: str) -> NDArray[np.float32]`: Convert text to audio
 
 ## Development

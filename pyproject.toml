@@ -5,8 +5,6 @@ description = "Text-to-Speech synthesis package with GLaDOS and Kokoro voices"
 requires-python = ">=3.12"
 dependencies = [
     "numpy>=1.24.0",
-    "soundfile>=0.13.0",
-    "numba>=0.61.0",
 ]
 
 [project.optional-dependencies]
@@ -18,9 +16,8 @@ dev = [
     "mypy",
     "types-requests",
 ]
-downloader = [
-    "httpx>=0.28.1",
-    "rich>=14.1.0",
+cli = [
+    "soundfile>=0.13.0",
 ]
 http = [
     "piper-tts[http]>=1.2.0",

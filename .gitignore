@@ -1,8 +1,9 @@
 .devenv/
 .direnv/
 .pre-commit-config.yaml
+result
 
-models/
+*.onnx
 
 **/__pycache__/**
 *.wav

@@ -57,7 +57,7 @@ jobs:
       - uses: DeterminateSystems/magic-nix-cache-action@main
       - uses: DeterminateSystems/flake-checker-action@main
       - name: Build Docker Container
-        run: nix build .#docker-cpu-http
+        run: nix build --accept-flake-config .#docker-cpu-http
 
       - name: Load, tag, and push (non-PR only)
         if: github.event_name != 'pull_request'
